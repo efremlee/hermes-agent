@@ -16,17 +16,17 @@ const bootstrapBackend = {
   platform: 'linux'
 }
 
-function startupOptions(overrides: Record<string, unknown> = {}) {
-  return {
+function startupOptions<T extends Record<string, unknown> = Record<string, never>>(overrides: T = {} as T) {
+  const base = {
     assertCurrentAttempt: () => {},
     connectRemote: vi.fn(async remote => ({ baseUrl: remote.baseUrl, mode: 'remote' as const })),
     ensureLocalRuntime: vi.fn(async backend => ({ ...backend, command: 'hermes' })),
     prepareLocalBackend: vi.fn(async () => bootstrapBackend),
     resolveRemote: vi.fn(async () => null),
     waitForDecision: vi.fn(async () => 'continue-local' as const),
-    waitForLocalStart: vi.fn(async () => {}),
-    ...overrides
+    waitForLocalStart: vi.fn(async () => {})
   }
+  return { ...base, ...overrides } as typeof base & T
 }
 
 test('primary remote descriptor preserves a resolved registry connection id', () => {
