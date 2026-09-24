@@ -322,6 +322,7 @@ import {
 } from './native-oauth'
 import { runNativeLogin } from './native-oauth-login'
 import { loadNativeTokenSet, type NativeTokenStoreIo, persistNativeTokenSet } from './native-token-store'
+import { planNoConsoleGitSpawn, setNoConsoleGitRoots, windowsGitHost } from './no-console-git'
 import { registerNativeNotifications } from './notification-ipc'
 import { serializeJsonBody, setJsonRequestHeaders } from './oauth-net-request'
 import { LEGACY_OAUTH_PARTITION, resolveOauthPartition } from './oauth-partition'
@@ -945,6 +946,7 @@ function pathWithHermesManagedNode(...entries) {
 // install.ps1 / install.sh use, so a desktop-only user and a CLI-only user end
 // up with identical layouts and can share one install.
 const ACTIVE_HERMES_ROOT = path.join(HERMES_HOME, 'hermes-agent')
+setNoConsoleGitRoots([!IS_PACKAGED ? SOURCE_REPO_ROOT : null, ACTIVE_HERMES_ROOT])
 // VENV_ROOT — venv lives inside the repo, exactly like install.ps1 does it.
 const VENV_ROOT = path.join(ACTIVE_HERMES_ROOT, 'venv')
 // BOOTSTRAP_COMPLETE_MARKER — written by the first-launch bootstrap runner
@@ -3258,14 +3260,24 @@ function resolveUpdateRoot() {
 function runGit(args, options: any = {}): Promise<{ code: number; stdout: string; stderr: string }> {
   return new Promise((resolve, reject) => {
     const gitBinary = resolveGitBinary()
+    const gitArgs = IS_WINDOWS ? ['-c', 'windows.appendAtomically=false', ...args] : args
+    const host = IS_WINDOWS ? windowsGitHost(true) : null
+    const plan = planNoConsoleGitSpawn({
+      gitBin: gitBinary,
+      args: gitArgs,
+      isWindows: IS_WINDOWS,
+      pythonBin: host?.pythonBin ?? null,
+      scriptPath: host?.scriptPath ?? null,
+      env: { ...process.env, ...((options.env || {}) as any), GIT_TERMINAL_PROMPT: '0' }
+    })
 
     const child = spawn(
-      gitBinary,
-      IS_WINDOWS ? ['-c', 'windows.appendAtomically=false', ...args] : args,
+      plan.command,
+      plan.args,
       hiddenWindowsChildOptions({
         cwd: options.cwd,
-        env: { ...process.env, ...((options.env || {}) as any), GIT_TERMINAL_PROMPT: '0' },
-        stdio: ['ignore', 'pipe', 'pipe']
+        env: plan.env,
+        stdio: plan.stdio
       })
     )
 
