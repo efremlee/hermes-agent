@@ -188,7 +188,7 @@ import {
   resolveDesktopConnectionRequest,
   resolveDesktopWindowLaunch
 } from './desktop-profile'
-import { resolveDesktopRemoteRoute, registryPrimaryBootRoute, v1SshTerminalPoolKey } from './desktop-remote-route'
+import { registryPrimaryBootRoute, resolveDesktopRemoteRoute, v1SshTerminalPoolKey } from './desktop-remote-route'
 import {
   buildPosixCleanupScript,
   buildWindowsCleanupScript,

@@ -4,7 +4,7 @@ import { test } from 'vitest'
 
 import { normalizeRegistry, REGISTRY_VERSION } from './connection-registry'
 import { backendScopeKey } from './connection-registry'
-import { resolveDesktopRemoteRoute, registryPrimaryBootRoute, v1SshTerminalPoolKey } from './desktop-remote-route'
+import { registryPrimaryBootRoute, resolveDesktopRemoteRoute, v1SshTerminalPoolKey } from './desktop-remote-route'
 
 const tokenA = { encoding: 'plain', value: 'token-a' }
 const tokenB = { encoding: 'plain', value: 'token-b' }
